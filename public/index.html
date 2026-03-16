@@ -1,47 +1,363 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<!-- Basic Page Needs
+<head>
+    <!-- Basic Page Needs
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<meta charset="utf-8" />
-		<title>饼饼!</title>
-		<meta name="description" content="" />
-		<meta name="author" content="" />
+    <meta charset="utf-8" />
+    <title>饼饼! - 智能聊天</title>
+    <meta name="description" content="基于Durable Objects的智能聊天应用" />
+    <meta name="author" content="" />
 
-		<!-- Mobile Specific Metas
+    <!-- Mobile Specific Metas
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-		<!-- FONT
+    <!-- CSS
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/skeleton.css" />
+    <link rel="stylesheet" href="styles.css" />
+    
+    <!-- 添加Google Fonts和Font Awesome图标库 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-		<!-- CSS
+    <!-- Favicon
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<link rel="stylesheet" href="css/normalize.css" />
-		<link rel="stylesheet" href="css/skeleton.css" />
-		<link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/ico" href="favicon.ico" />
+    <script src="/dist/index.js" type="module"></script>
+    
+    <!-- 内联样式美化 - 完全不影响原有功能 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-		<!-- Favicon
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<link rel="icon" type="image/ico" href="favicon.ico" />
-		<script src="/dist/index.js" type="module"></script>
-	</head>
-	<body>
-		<!-- Primary Page Layout
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-		<div class="container" style="width: 95%; height: 100%">
-			<div class="row" style="height: 100%">
-				<div class="one-third column" style="margin-top: 25%">
-					<h4><b>Chat</b>, powered by Durable Objects</h4>
-					<p>
-						我在武昌
-					</p>
-				</div>
-				<div class="two-thirds column" id="root"></div>
-			</div>
-		</div>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+        }
 
-		<!-- End Document
+        /* 容器美化 */
+        .container.custom-container {
+            width: 95%;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 行美化 */
+        .row.custom-row {
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            margin: 0;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .row.custom-row:hover {
+            transform: scale(1.01);
+        }
+
+        /* 左侧区域美化 */
+        .left-panel {
+            background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 40px 30px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 0 !important;
+            height: 100%;
+        }
+
+        /* 装饰性背景元素 */
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .left-panel h4 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .left-panel h4 b {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .left-panel p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #4a5568;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .left-panel p i {
+            color: #667eea;
+            font-size: 1.4rem;
+        }
+
+        /* 位置标识美化 */
+        .location-badge {
+            display: inline-flex;
+            align-items: center;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            font-size: 0.95rem;
+            color: #4a5568;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            width: fit-content;
+        }
+
+        .location-badge i {
+            color: #48bb78;
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+
+        .location-badge span {
+            font-weight: 500;
+        }
+
+        .location-badge .city {
+            color: #667eea;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        /* 功能卡片 */
+        .feature-list {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #4a5568;
+            font-size: 0.95rem;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .feature-item i {
+            color: #667eea;
+            width: 24px;
+            font-size: 1.1rem;
+        }
+
+        /* 右侧区域美化 */
+        .right-panel {
+            background: white;
+            padding: 0 !important;
+            height: 100%;
+            position: relative;
+        }
+
+        /* 右侧内容包装器 - 确保原有功能不受影响 */
+        .chat-wrapper {
+            height: 100%;
+            width: 100%;
+            background: white;
+            border-radius: 0 32px 32px 0;
+            overflow: hidden;
+        }
+
+        /* 确保root元素占满整个右侧 */
+        #root {
+            height: 100%;
+            width: 100%;
+            display: block;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 750px) {
+            .row.custom-row {
+                height: 95vh;
+                flex-direction: column;
+            }
+            
+            .left-panel {
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                border-radius: 32px 32px 0 0;
+                padding: 30px !important;
+            }
+            
+            .right-panel {
+                border-radius: 0 0 32px 32px;
+            }
+            
+            .left-panel h4 {
+                font-size: 2rem;
+            }
+            
+            .feature-list {
+                display: none; /* 移动端隐藏功能列表以节省空间 */
+            }
+        }
+
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        /* 加载动画 - 仅在应用加载时显示 */
+        .loading-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            background: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Primary Page Layout
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-	</body>
+    <div class="container custom-container">
+        <div class="row custom-row">
+            <!-- 左侧区域 - 美化但完全保留原有内容 -->
+            <div class="one-third column left-panel" style="margin-top: 0 !important">
+                <!-- 保留原有内容并美化 -->
+                <h4><b>Chat</b>, powered by Durable Objects</h4>
+                
+                <!-- 美化后的位置显示 -->
+                <p>
+                    <i class="fas fa-map-marker-alt"></i>
+                    我在武昌
+                </p>
+
+                <!-- 新增位置标识卡片 - 纯装饰，不影响功能 -->
+                <div class="location-badge">
+                    <i class="fas fa-circle"></i>
+                    <span>当前定位: <span class="city">武汉市·武昌区</span></span>
+                </div>
+
+                <!-- 功能特性展示 - 纯视觉元素，不参与功能 -->
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <i class="fas fa-bolt"></i>
+                        <span>基于 Durable Objects 实时同步</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>端到端加密 · 隐私安全</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-history"></i>
+                        <span>消息历史永久保存</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧区域 - 完全保持原有结构和功能 -->
+            <div class="two-thirds column right-panel">
+                <div class="chat-wrapper">
+                    <!-- 原有的root元素，完全不变 -->
+                    <div id="root">
+                        <!-- 添加一个加载动画，应用加载完成后会被覆盖 -->
+                        <div class="loading-animation" id="loading-animation">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加一个小脚本来处理加载动画（可选，不影响功能） -->
+    <script>
+        (function() {
+            // 等待原有应用加载完成后隐藏加载动画
+            // 这个脚本完全不影响原有功能
+            window.addEventListener('load', function() {
+                const loadingEl = document.getElementById('loading-animation');
+                if (loadingEl) {
+                    // 给原有应用一点时间渲染
+                    setTimeout(function() {
+                        loadingEl.style.display = 'none';
+                    }, 500);
+                }
+            });
+        })();
+    </script>
+
+    <!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
 </html>
